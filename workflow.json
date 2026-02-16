@@ -1,0 +1,830 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields1').item.json.user_input }}",
+        "options": {
+          "systemMessage": "=You are a Snowflake SQL generator.\nYou must Run snowflake tool find whether the table exists or not\nRules:\n- Generate ONLY Snowflake SQL\n- Do NOT generate stored procedures\n- Do NOT use $$, BEGIN, END, or RETURN\n- Each SQL statement must be executable independently\n- Return ONLY a valid JSON array of SQL strings\n- Do NOT explain anything\n- Do NOT use markdown\n- Use placeholders for sensitive values\n \nSensitive placeholders to use exactly as written:\n<bucket>\n<awsKey>\n<awsSecret>\n<fileName>"
+        }
+      },
+      "id": "3cecb0f0-519d-419a-acbb-fe3465143000",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        8544,
+        2512
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\n\n{{$json.query}}\n"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        9152,
+        2512
+      ],
+      "id": "9fa61def-1e3d-4948-ba3b-f580a70bbacf",
+      "name": "Snowflake9",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM {{ $('Edit Fields1').item.json.source_table }}\nWHERE ID > {{ $('Snowflake11').item.json.LAST_PROCESSED_ID }}\nORDER BY ID;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        8944,
+        1760
+      ],
+      "id": "03227989-f961-4d1e-bf54-f74f781701a1",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "667tlu1AYvBIPY0y",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from sales_data;"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        9536,
+        2704
+      ],
+      "id": "b9009034-7576-4719-b064-318848c9c574",
+      "name": "Snowflake10",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT last_processed_id\nFROM {{ $('Edit Fields1').item.json.ingestion_control_table }}\nWHERE source_name = '{{ $('Edit Fields1').item.json.table_name }}';\n"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        8608,
+        2064
+      ],
+      "id": "c8a76854-bb28-46bb-8da0-e683f543316f",
+      "name": "Snowflake11",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE ingestion_control\nSET last_processed_id = {{ $json['MAX(ID)'] }}\nWHERE source_name = 'test';\n"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        9536,
+        2512
+      ],
+      "id": "9f5a7c52-a5b7-41c8-b710-f9cb14a0b077",
+      "name": "Snowflake12",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE or replace TABLE {{ $('Edit Fields1').item.json.ingestion_control_table }} (\n    source_name        VARCHAR(100) PRIMARY KEY,\n    last_processed_id  BIGINT,\n    last_processed_ts  TIMESTAMP,\n    status             VARCHAR(20),\n    updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        8096,
+        2176
+      ],
+      "id": "c84cc013-840b-4638-8879-1f07e3274465",
+      "name": "Snowflake13",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO {{ $('Edit Fields1').item.json.ingestion_control_table }} (\n    source_name,\n    last_processed_id,\n    last_processed_ts,\n    status\n)VALUES (\n    '{{ $('Edit Fields1').item.json.table_name }}',\n    0,\n    NULL,\n    'INIT');"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        8288,
+        2176
+      ],
+      "id": "efae9e79-1b2e-4eba-ad5e-86e3b5df6adf",
+      "name": "Snowflake14",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    CASE \n        WHEN COUNT(*) > 0 THEN TRUE \n        ELSE FALSE \n    END AS table_exists\nFROM INFORMATION_SCHEMA.TABLES\nWHERE TABLE_SCHEMA = '{{ $json.schema }}'\n  AND TABLE_NAME = '{{ $json.ingestion_control_table }}';\n"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        7744,
+        2032
+      ],
+      "id": "2cac9b2f-afbe-457e-8885-d07d168e2811",
+      "name": "Snowflake15",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "43637ff2-21a2-402e-b07c-181145afe572",
+              "leftValue": "={{ $json.TABLE_EXISTS }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        7904,
+        2032
+      ],
+      "id": "03f4b207-8681-43c0-9763-822709d243ca",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst s3Csv = $('Code in JavaScript2').first().json.s3_csv || \"\";\nconst mysqlCsv = $input.first().json.mysql_csv || \"\";\n\n// ---------- Parse CSV ----------\nfunction parse(csv) {\n  return csv\n    .split(\"\\n\")\n    .map(l => l.trim())\n    .filter(l => l.length > 0);\n}\n\nconst s3Lines = parse(s3Csv);\nconst mysqlLines = parse(mysqlCsv);\n\n// Extract header\nconst header = s3Lines.length\n  ? s3Lines[0]\n  : mysqlLines[0];\n\nconst dataLines = [\n  ...s3Lines.slice(1),\n  ...mysqlLines.slice(1)\n];\n\n// ---------- Deduplicate ----------\nconst unique = [...new Set(dataLines)];\n\n// ---------- Sort by first column (id) ----------\nunique.sort((a, b) => {\n  const aId = Number(a.split(\",\")[0]);\n  const bId = Number(b.split(\",\")[0]);\n  return aId - bId;\n});\n\nconst finalCsv = [header, ...unique].join(\"\\n\");\n\n// ---------- Return Binary ----------\nreturn [{\n  json: {\n    total_rows: unique.length\n  },\n  binary: {\n    data: {\n      data: Buffer.from(finalCsv).toString(\"base64\"),\n      mimeType: \"text/csv\",\n      fileName: \"sales_data_batch_final.csv\"\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9664,
+        2064
+      ],
+      "id": "26fdc664-babd-452f-ab5c-daaeff883582",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\n\nselect max(id) from {{ $('Edit Fields1').item.json.source_table }};"
+      },
+      "type": "n8n-nodes-base.snowflake",
+      "typeVersion": 1,
+      "position": [
+        9360,
+        2512
+      ],
+      "id": "9a84a43b-ca9f-469d-ab62-cea4dc8bb88b",
+      "name": "Snowflake",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Source 1\n## Mysql DB",
+        "height": 256,
+        "width": 406
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8896,
+        1664
+      ],
+      "typeVersion": 1,
+      "id": "e74f2c19-a3ac-4cc1-90b3-1328bfadbfa7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Source 2\n## S3 Bucket",
+        "height": 240,
+        "width": 422,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8896,
+        1984
+      ],
+      "typeVersion": 1,
+      "id": "dd138d38-fb8d-4e78-9ec2-6445d9020e6f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## External Stage\n## S3 Bucket",
+        "height": 272,
+        "width": 374,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        9616,
+        1952
+      ],
+      "typeVersion": 1,
+      "id": "39fe78da-f0b2-4e58-b1e3-361281dc2268",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Dynamic parameters (use credentials / env vars in real usage)\nconst bucket = $('Edit Fields1').first().json.bucket\nconst awsKey = $('Edit Fields1').first().json.aws_key;\nconst awsSecret = $('Edit Fields1').first().json.aws_secret;\nconst fileName = $('Edit Fields1').first().json.file_name;\n\n// Parse AI output (expects JSON array of SQL strings)\nlet sqlArray = JSON.parse($('AI Agent').first().json.output);\n\n// Replace placeholders\nconst replacedSql = sqlArray.map(sql =>\n  sql\n    .replaceAll('<bucketName>', bucket)\n    .replaceAll('<bucket>', bucket)\n    .replaceAll('<awsKey>', awsKey)\n    .replaceAll('<awsSecret>', awsSecret)\n    .replaceAll('<fileName>', fileName)\n);\n\n// Convert to n8n items\nreturn replacedSql.map(sql => ({\n  json: {\n    query: sql\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8928,
+        2512
+      ],
+      "id": "4133df55-99d3-47c0-9164-b0412f3c6942",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "content": "# Source Extraction",
+        "height": 720,
+        "width": 2992,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7024,
+        1632
+      ],
+      "typeVersion": 1,
+      "id": "9620f34e-ff4e-488d-8249-ef3ba9dddb28",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# AI Data Ingestion",
+        "height": 496,
+        "width": 1792,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8144,
+        2400
+      ],
+      "typeVersion": 1,
+      "id": "90695081-607d-4699-afca-b99a22ee3159",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "message": "Hi, I'm your automation bot 🤖\nPlease describe the pipeline information (source, destination, schema, and any conditions) so I can generate the required Snowflake SQL commands.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        7360,
+        2032
+      ],
+      "id": "d0dd23dc-15b6-430a-b57c-99c47487b17e",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "model": "gpt-5-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        8480,
+        2736
+      ],
+      "id": "3aea0bb7-9af6-4d54-8d1a-ad478be5a9c6",
+      "name": "Azure OpenAI Chat Model1",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "yqJFYU4DJLECmZNj",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    CASE \n        WHEN COUNT(*) > 0 THEN TRUE \n        ELSE FALSE \n    END AS table_exists\nFROM INFORMATION_SCHEMA.TABLES\nWHERE TABLE_SCHEMA = '{{ $('Edit Fields1').item.json.schema }}'\n  AND TABLE_NAME = '{{ $('Edit Fields1').item.json.table_name }}';\n"
+      },
+      "type": "n8n-nodes-base.snowflakeTool",
+      "typeVersion": 1,
+      "position": [
+        8752,
+        2736
+      ],
+      "id": "7631994d-2ded-423d-84f8-ed7b595f62e0",
+      "name": "Snowflake Tool",
+      "credentials": {
+        "snowflake": {
+          "id": "HTeej5ZUAp23QMLD",
+          "name": "Snowflake account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "94e57734-caff-4a31-abe9-8ef0d1fcdac6",
+              "name": "schema",
+              "value": "TEST",
+              "type": "string"
+            },
+            {
+              "id": "2ae1a1bd-97d3-4059-8445-a8c47f1268b0",
+              "name": "ingestion_control_table",
+              "value": "INGESTION_CONTROL",
+              "type": "string"
+            },
+            {
+              "id": "57e876ef-5bb2-4143-bfd6-d67db170bba9",
+              "name": "table_name",
+              "value": "sales_data",
+              "type": "string"
+            },
+            {
+              "id": "84b47518-f40a-40dd-8c81-2681e71c2c6d",
+              "name": "bucket",
+              "value": "hackathon-bucket-for-ingestion-tool",
+              "type": "string"
+            },
+            {
+              "id": "b530611c-54e3-476f-a77c-b37488b25e5a",
+              "name": "aws_key",
+              "value": "AKIAW42RQYAAMWQJZG2K",
+              "type": "string"
+            },
+            {
+              "id": "0d168f96-da61-4e45-9fce-69456d627371",
+              "name": "aws_secret",
+              "value": "Zssa9C/777CIacG2LAUYB+egMivm6TFxkW0NLVsi",
+              "type": "string"
+            },
+            {
+              "id": "8d809f79-40a7-43bf-a91f-c68db54a7888",
+              "name": "file_name",
+              "value": "sales_data.csv",
+              "type": "string"
+            },
+            {
+              "id": "0cd35d98-733a-4c84-ba60-5f607d44bea1",
+              "name": "source_table",
+              "value": "sales_data",
+              "type": "string"
+            },
+            {
+              "id": "72eddcec-66ff-4773-aff3-3fd93b5542a1",
+              "name": "user_input",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7568,
+        2032
+      ],
+      "id": "e81dceb4-b0f4-4b91-84ef-90a6567e2188",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        7168,
+        2032
+      ],
+      "id": "98c7fc37-b64b-48d1-a131-ef54392a4926",
+      "name": "When chat message received",
+      "webhookId": "d0c6c09f-c19e-41ba-b561-19b8cebef5ac"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "hackathon-bucket-for-ingestion-tool",
+        "fileName": "={{ $('Edit Fields1').item.json.file_name }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        9840,
+        2064
+      ],
+      "id": "d163f535-f80c-4ecd-ac2c-46eb4037f519",
+      "name": "Upload a file2",
+      "credentials": {
+        "aws": {
+          "id": "cj1zXCTQCe1AEZ7v",
+          "name": "AWS (IAM) account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "bucketName": "hackathon-bucket-for-ingestion-tool",
+        "fileKey": "sales_data_batch_1.csv"
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        8928,
+        2080
+      ],
+      "id": "e8d097c2-5096-44e4-8633-08c8a1a89e82",
+      "name": "Download a file1",
+      "credentials": {
+        "aws": {
+          "id": "cj1zXCTQCe1AEZ7v",
+          "name": "AWS (IAM) account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\n\nif (!item.binary || !item.binary.data) {\n  throw new Error(\"No binary file received from S3\");\n}\n\nconst csvText = Buffer\n  .from(item.binary.data.data, 'base64')\n  .toString('utf8')\n  .trim();\n\nreturn [{\n  json: {\n    s3_csv: csvText\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9184,
+        2080
+      ],
+      "id": "57e9e99f-3544-4dac-8a3d-7c42b18e7b87",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nif (rows.length === 0) {\n  return [{\n    json: { mysql_csv: \"\" }\n  }];\n}\n\n/* ---- DEFINE COLUMN ORDER EXACTLY AS SNOWFLAKE TABLE ---- */\n\nconst columns = [\n  \"ID\",\n  \"YR\",\n  \"PD\",\n  \"QTR\",\n  \"CATG_CD\",\n  \"PLAN_TO_NM\",\n  \"SALES_ORG\",\n  \"SALES_RPTG_CHNL_NM\",\n  \"SALES_RPTG_SUBCHNL_NM\",\n  \"SALES_RPTG_RETL_ENV_NM\",\n  \"VOL_NKG_QTY\",\n  \"GSV\",\n  \"NSV\",\n  \"COGS_DIR_CHRG_VAL\",\n  \"GROSS_PRFT_VAL\",\n  \"NSV_USD\",\n  \"GROSS_PRFT_VAL_USD\",\n  \"USD_RATE\",\n  \"SALES_REF_KEY\"\n];\n\n/* ---- BUILD HEADER ---- */\nconst header = columns.join(\",\");\n\n/* ---- BUILD ROWS IN SAME ORDER ---- */\nconst lines = rows.map(r =>\n  columns.map(c => r.json[c] ?? \"\").join(\",\")\n);\n\nconst csv = [header, ...lines].join(\"\\n\");\n\nreturn [{\n  json: { mysql_csv: csv }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9152,
+        1760
+      ],
+      "id": "cd068996-ae7a-4f0e-8600-674e28bf7685",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        9456,
+        2064
+      ],
+      "id": "fed07694-99ac-4e86-a863-63f103559a88",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "# Ingestion control table",
+        "height": 416,
+        "width": 1040,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7712,
+        1920
+      ],
+      "typeVersion": 1,
+      "id": "00c91d42-e0f6-4c3e-a625-1de3d174aebb",
+      "name": "Sticky Note3"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake9": {
+      "main": [
+        [
+          {
+            "node": "Snowflake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake11": {
+      "main": [
+        [
+          {
+            "node": "Download a file1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake13": {
+      "main": [
+        [
+          {
+            "node": "Snowflake14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake14": {
+      "main": [
+        [
+          {
+            "node": "Snowflake11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake15": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Snowflake11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Snowflake13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Upload a file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake": {
+      "main": [
+        [
+          {
+            "node": "Snowflake12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Snowflake9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Chat": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snowflake Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Snowflake15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download a file1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c3a5a242e7d3b447da308c36571d185d44d066405d930b61da46efee7826db53"
+  }
+}
